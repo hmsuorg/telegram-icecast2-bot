@@ -100,7 +100,7 @@ class RadioBot:
 
             stream = random.choice(stats)
 
-            private_url = stream.stream.replace('//', '//{}:{}@'.format(user_data.username, password))
+            private_url = '{}?username={}&password={}'.format(stream.stream, user_data.username, password)
 
             bot.sendMessage(
                 chat_id=update.message.chat_id,

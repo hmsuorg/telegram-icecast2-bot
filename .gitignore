@@ -5,7 +5,10 @@ __pycache__/
 
 # C extensions
 *.so
+# vim
 *.swp
+# sqllite
+*.sqlite3
 # Distribution / packaging
 .Python
 env/

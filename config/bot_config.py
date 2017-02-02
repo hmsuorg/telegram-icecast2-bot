@@ -1,6 +1,6 @@
 """ Config File """
 
-TOKEN = 'YOUR_TELEGRAM_TOKEN'
+TOKEN = '315884542:AAGJb-1vUU6OFu9gcrNKAK6NgpmwJO5WYho'
 
 ICECAST2_SERVERS = [
     'http://radio2.hmsu.org:42024',

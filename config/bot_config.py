@@ -1,7 +1,7 @@
 """ Config File """
 
 # change this to your telegram token
-TOKEN = 'TELEGRAM TOKEN'
+TOKEN = '
 
 # list of IceCast2 servers
 ICECAST2_SERVERS = [

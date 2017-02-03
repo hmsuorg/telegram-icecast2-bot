@@ -7,6 +7,7 @@ from urllib import request
 import redis
 
 from config.bot_config import ICECAST2_SERVERS, SESSION_EXPIRE, ICECAST2_STATS_FILE, SERVERS_LIMIT
+from config.bot_config import REDIS_DB, REDIS_HOST, REDIS_PORT
 from common import RadioStream, CheckIceCast2Stats
 
 
@@ -16,7 +17,7 @@ class RadioBot:
 
     def __init__(self):
 
-        self.redis_ctx = redis.Redis(host='localhost', port=6379, db=0)
+        self.redis_ctx = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
 
         self.stats = CheckIceCast2Stats()
 

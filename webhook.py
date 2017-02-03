@@ -5,8 +5,6 @@ import redis
 
 from config.bot_config import REDIS_DB, REDIS_HOST, REDIS_PORT, WEBHOOK_IP, WEBHOOK_PORT
 
-redis_ctx = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
-
 
 class IceCast2Auth:
 

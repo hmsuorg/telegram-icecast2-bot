@@ -5,7 +5,7 @@
 ####################################
 
 # Change this to your telegram token
-TOKEN = ''
+TOKEN = 'TOKEN'
 
 
 ###################################
@@ -29,7 +29,7 @@ SERVERS_LIMIT = 100
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 REDIS_DB = 0
-SESSION_EXPIRE = 24 * 3600  # 24h
+SESSION_EXPIRE = 8 * 3600  # 8h
 
 ###################################
 # WEB AUTH HOOK

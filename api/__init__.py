@@ -1,17 +1,20 @@
 """ RadioBot API """
 
+import logging
 import random
 import json
 import uuid
 from urllib import request
+
 import redis
 
 from config.bot_config import ICECAST2_SERVERS, SESSION_EXPIRE, ICECAST2_STATS_FILE, SERVERS_LIMIT
 from config.bot_config import REDIS_DB, REDIS_HOST, REDIS_PORT
-from common import RadioStream, CheckIceCast2Stats
+from api.common import RadioStream, CheckIceCast2Stats
+from api.interfaces import CommandHandlerAPI
 
 
-class RadioBot:
+class RadioBot(CommandHandlerAPI):
 
     """ IceCast2 Radio Bot """
 
@@ -19,7 +22,7 @@ class RadioBot:
 
         self.redis_ctx = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
 
-        self.stats = CheckIceCast2Stats()
+        self.log = logging.getLogger(name='RadioBot')
 
     def start_tcb(self, bot, update, args):
 
@@ -54,6 +57,57 @@ class RadioBot:
         bot.sendMessage(chat_id=update.message.chat_id, text="HMSU Radio Bot Help")
         bot.sendMessage(chat_id=update.message.chat_id, text="Type: /radiokey to get your personal radio access")
 
+    def get_streams(self, bot, update):
+
+        """
+        get_streams
+
+        :param bot
+        :param update
+        """
+
+        ice_stats = CheckIceCast2Stats()
+        stats = ice_stats.get_stats()
+
+        if not stats:
+
+            bot.sendMessage(chat_id=update.message.chat_id, text='There are no active streams')
+            return False
+
+        return stats
+
+    def get_user_data(self, bot, update):
+
+        """
+        get_user_data
+
+        :param bot
+        :param update
+        """
+
+        user_data = bot.get_chat(update.message.chat_id)
+
+        # if username does not exist, we cannot continue, so we just message back, how to create a username
+        if not user_data.username:
+
+            # TODO may be is a good idea, to create random username?
+
+            bot.sendMessage(
+                chat_id=update.message.chat_id, text="Please set your username ( telegram -> settings)"
+            )
+
+            bot.sendMessage(
+                chat_id=update.message.chat_id,
+                text="More info @ https://telegram.org/faq#q-what-are-usernames-how-do-i-get-one"
+            )
+
+            bot.sendMessage(
+                chat_id=update.message.chat_id, text="Note that, for this session was created a random username"
+            )
+
+            user_data.username = uuid.uuid4()
+
+        return user_data
 
     def radiokey_tcb(self, bot, update, args):
 
@@ -66,22 +120,12 @@ class RadioBot:
 
         """
 
-        user_data = bot.get_chat(update.message.chat_id)
+        streams = self.get_streams(bot, update)
 
-        # if username does not exist, we cannot continue, so we just message back, how to create a username
-        if not user_data.username:
-
-            bot.sendMessage(
-                chat_id=update.message.chat_id, text="Please set your username ( telegram -> settings)"
-            )
-
-            bot.sendMessage(
-                chat_id=update.message.chat_id,
-                text="More info @ https://telegram.org/faq#q-what-are-usernames-how-do-i-get-one"
-            )
-
-
+        if streams is False:
             return
+
+        user_data = self.get_user_data(bot, update)
 
         # check if the username is already  exist
         is_register = self.redis_ctx.get(user_data.username)
@@ -92,25 +136,17 @@ class RadioBot:
         else:
 
             password = uuid.uuid4()
+            self.redis_ctx.setex(password, user_data.username, SESSION_EXPIRE)
             self.redis_ctx.setex(user_data.username, password, SESSION_EXPIRE)
 
+        self.log.info('User: {} requesting a radio access'.format(user_data.username))
 
-        stats = self.stats.get_stats()
+        stream = random.choice(streams)
 
-        if stats:
+        private_url = '{}?radiokey={}'.format(stream.stream, password)
 
-            stream = random.choice(stats)
-
-            private_url = '{}?username={}&password={}'.format(stream.stream, user_data.username, password)
-
-            bot.sendMessage(
-                chat_id=update.message.chat_id,
-                text="Done, your username is: {}, with password: {}, tune in @ {} or copy/paste this link: {} into your player or browser".format(
-                    user_data.username, password, stream.server, private_url
-                )
-            )
-
-        else:
-
-            bot.sendMessage(chat_id=update.message.chat_id, text='There are no active streams')
+        bot.sendMessage(
+            chat_id=update.message.chat_id,
+            text="Done, copy/paste this link: {} into your player or browser to tune in".format(private_url)
+        )
 

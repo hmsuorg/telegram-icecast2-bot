@@ -21,7 +21,7 @@ class IceCast2Auth:
         _, data = request.form['mount'].split('?')
         data = parse_qs(data)
 
-        username = self.redis_ctx.get(data.get('radiokey')[0])
+        username = self.redis_ctx.get(data.get('key')[0])
 
         if username:
 

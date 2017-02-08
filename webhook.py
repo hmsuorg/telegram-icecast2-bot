@@ -1,41 +1,42 @@
-import logging
 from urllib.parse import parse_qs
-from japronto import Application
+from urllib.parse import urlparse
+
+import tornado.ioloop
+import tornado.web
+import tornado.escape
 
 import redis
-
 from config.bot_config import REDIS_DB, REDIS_HOST, REDIS_PORT, WEBHOOK_IP, WEBHOOK_PORT
 
+redis_ctx = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
 
-class IceCast2Auth:
 
-    def __init__(self):
+class MainHandler(tornado.web.RequestHandler):
+    
+    def post(self):
+        
+        data = urlparse(self.request.body_arguments['mount'][0])
+        key = parse_qs(data.query).get(b'key')[0]
 
-        self.redis_ctx = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
-        self.log = logging.getLogger(name='IceCast2Auth Webhook')
+        test = redis_ctx.get(key)
 
-    def auth(self, request):
-
-        auth = {}
-
-        _, data = request.form['mount'].split('?')
-        data = parse_qs(data)
-
-        username = self.redis_ctx.get(data.get('key')[0])
-
-        if username:
-
-            auth['icecast-auth-user'] = '1'
-            print('User: {} start listening'.format(username.decode('utf-8')))
-
+        if test:
+            print('{} is authenticated and starting listening'.format(test))
+            self.set_header('icecast-auth-user', '1')
+        
         else:
-            auth['icecast-auth-user'] = '0'
-
-        return request.Response(text='', headers=auth)
+            self.set_header('icecast-auth-user', '0')
 
 
-app = Application()
-app_auth = IceCast2Auth()
+def make_app():
+    
+    return tornado.web.Application([
+        (r"/icecast/", MainHandler),
+    ])
 
-app.router.add_route('/icecast/', app_auth.auth, methods=['POST'])
-app.run(host=WEBHOOK_IP, port=WEBHOOK_PORT, debug=True)
+if __name__ == "__main__":
+    
+    app = make_app()
+    app.listen(8044)
+    tornado.ioloop.IOLoop.current().start()
+

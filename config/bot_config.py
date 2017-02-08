@@ -24,6 +24,8 @@ ICECAST2_SERVERS = [
     'https://radio3.hmsu.org:8000',
 ]
 
+SSL = True
+
 # IceCast2 status files, depenends on IceCast2 config file.
 # this web resource is public by default, so we used it to fetch
 # statistics about the icecast2 server
@@ -38,8 +40,8 @@ SERVERS_LIMIT = 100
 # this web hook is used by icecast2 url settings and specialy from listener_add
 # more info @ https://icecast.org/docs/icecast-2.4.0/auth.html
 
-WEBHOOK_IP = "192.168.10.109"
-WEBHOOK_PORT = 8000
+WEBHOOK_IP = "radio2.hmsu.org"
+WEBHOOK_PORT = 8044
 
 ###################################
 # Redis settings

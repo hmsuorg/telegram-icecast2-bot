@@ -160,6 +160,7 @@ class RadioBot(CommandHandlerAPI):
             self.redis_ctx.hset(password, "stream", stream.stream)
 
             self.redis_ctx.expire(password, REDIS_SESSION_EXPIRE)
+            self.redis_ctx.setex(user_data.username, user_data.username, REDIS_SESSION_EXPIRE)
 
         self.log.info('User: {} requesting a radio access'.format(user_data.username))
 

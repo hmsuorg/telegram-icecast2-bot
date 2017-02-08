@@ -29,7 +29,7 @@ class MainHandler(tornado.web.RequestHandler):
 
             if username:
 
-                if ip_redis == "none":
+                if ip_redis == b"none":
 
                     redis_ctx.hset(key, "ip", ip)
                     ip_redis = ip
@@ -43,7 +43,7 @@ class MainHandler(tornado.web.RequestHandler):
                     return
 
                 # if the stream is different we rejecting this connections
-                
+
                 print('{} is authenticated and starting listening'.format(username))
                 self.set_header('icecast-auth-user', '1')
 

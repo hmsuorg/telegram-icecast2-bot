@@ -6,7 +6,7 @@ import tornado.web
 import tornado.escape
 
 import redis
-from config.bot_config import REDIS_DB, REDIS_HOST, REDIS_PORT, WEBHOOK_IP, WEBHOOK_PORT
+from config.bot_config import REDIS_DB, REDIS_HOST, REDIS_PORT, WEBHOOK_IP, WEBHOOK_PORT, REDIS_SESSION_EXPIRE
 
 redis_ctx = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
 
@@ -15,17 +15,29 @@ class MainHandler(tornado.web.RequestHandler):
     
     def post(self):
         
-        data = urlparse(self.request.body_arguments['mount'][0])
-        key = parse_qs(data.query).get(b'key')[0]
+        try:
 
-        test = redis_ctx.get(key)
+            data = urlparse(self.request.body_arguments['mount'][0])
+            
+            ip = urlparse(self.request.body_arguments['ip'][0])
+            ip = ip.path
+            
+            key = parse_qs(data.query).get(b'key')[0]
 
-        if test:
-            print('{} is authenticated and starting listening'.format(test))
-            self.set_header('icecast-auth-user', '1')
+            username = redis_ctx.get(key)
+
+            if username:
+                
+                redis_ctx.set(username, ip)
+
+                print('{} is authenticated and starting listening'.format(username))
+                self.set_header('icecast-auth-user', '1')
         
-        else:
-            self.set_header('icecast-auth-user', '0')
+            else:
+                self.set_header('icecast-auth-user', '0')
+
+        except Exception as e:
+            print(e)
 
 
 def make_app():

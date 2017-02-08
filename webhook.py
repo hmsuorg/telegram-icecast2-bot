@@ -18,20 +18,32 @@ class MainHandler(tornado.web.RequestHandler):
         try:
 
             data = urlparse(self.request.body_arguments['mount'][0])
+            key = parse_qs(data.query).get(b'key')[0]
 
             ip = urlparse(self.request.body_arguments['ip'][0])
             ip = ip.path
 
-            key = parse_qs(data.query).get(b'key')[0]
-
             username = redis_ctx.hget(key, "username")
-            ip = redis_ctx.hget(key, "ip")
+            ip_redis = redis_ctx.hget(key, "ip")
             stream = redis_ctx.hget(key, "stream")
 
             if username:
 
-                redis_ctx.set(username, ip)
+                if ip_redis == "none":
 
+                    redis_ctx.hset(key, "ip", ip)
+                    ip_redis = ip
+
+                # if ip_redis is real ip but differ from the user's one
+                # we have to reject this connection. The user need to renew his key
+
+                if ip_redis and ip_redis != "none" and ip_redis != ip:
+
+                    self.set_header('icecast-auth-user', '0')
+                    return
+
+                # if the stream is different we rejecting this connections
+                
                 print('{} is authenticated and starting listening'.format(username))
                 self.set_header('icecast-auth-user', '1')
 
@@ -39,7 +51,9 @@ class MainHandler(tornado.web.RequestHandler):
                 self.set_header('icecast-auth-user', '0')
 
         except Exception as e:
+
             print(e)
+            self.set_header('icecast-auth-user', '0')
 
 
 def make_app():

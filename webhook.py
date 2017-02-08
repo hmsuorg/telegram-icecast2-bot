@@ -24,7 +24,7 @@ class MainHandler(tornado.web.RequestHandler):
             ip = ip.path
 
             x_real_ip = self.request.headers.get("X-Real-IP")
-            remote_ip = x_real_ip or self.request.remote_ip
+            remote_ip = x_real_ip or self.request.remote_ip.decode('utf-8')
 
             server_ip = redis_ctx.hget(key, "server")
 

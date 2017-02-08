@@ -24,9 +24,9 @@ class MainHandler(tornado.web.RequestHandler):
             ip = ip.path
 
             x_real_ip = self.request.headers.get("X-Real-IP")
-            remote_ip = x_real_ip or self.request.remote_ip.decode('utf-8')
+            remote_ip = x_real_ip or self.request.remote_ip
 
-            server_ip = redis_ctx.hget(key, "server")
+            server_ip = redis_ctx.hget(key, "server").decode('utf-8')
 
             # if the user trying to play between the stream servers
             if server_ip != remote_ip:

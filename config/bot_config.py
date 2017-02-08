@@ -24,6 +24,9 @@ ICECAST2_SERVERS = [
     'https://radio3.hmsu.org:8000',
 ]
 
+# by default status-json.xsl will return http protocol even ssl is set to 1 in
+# icecast.xml, so when we want and we want! to use SSL this flag must be set to True
+
 SSL = True
 
 # IceCast2 status files, depenends on IceCast2 config file.
@@ -39,6 +42,7 @@ SERVERS_LIMIT = 100
 # icecast authentication web hooK
 # this web hook is used by icecast2 url settings and specialy from listener_add
 # more info @ https://icecast.org/docs/icecast-2.4.0/auth.html
+# in our case the auth hook point to one of our stream server, but can be anything else.
 
 WEBHOOK_IP = "radio2.hmsu.org"
 WEBHOOK_PORT = 8044

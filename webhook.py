@@ -11,7 +11,7 @@ from config.bot_config import REDIS_DB, REDIS_HOST, REDIS_PORT, WEBHOOK_IP, WEBH
 redis_ctx = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
 
 
-class MainHandler(tornado.web.RequestHandler):
+class IceCast2Auth(tornado.web.RequestHandler):
 
     def post(self):
 
@@ -40,20 +40,23 @@ class MainHandler(tornado.web.RequestHandler):
 
             if username:
 
+                # if ip_redis is none, means brand new conenction and here
+                # we knowing the user ip send by icecast listener_add
                 if ip_redis == b'none':
 
                     redis_ctx.hset(key, 'ip', ip)
                     ip_redis = ip
 
-                # if ip_redis is real ip but differ from the user's one
-                # we have to reject this connection. The user need to renew his key
+                # if ip_redis is real ip but differes from the user's one
+                # we have to reject this connection. This means the user is shered its key
+                # with somebody else or the user had new ip address if the second one is happen,
+                # then we the user have to renew itsr key, there are a /renewkey command for
+                # this purpose
 
                 if ip_redis and ip_redis != 'none' and ip_redis != ip:
 
                     self.set_header('icecast-auth-user', '0')
                     return
-
-                # if the stream name is different we have to rejecting this connections
 
                 print('{} is authenticated and starting listening'.format(username))
                 self.set_header('icecast-auth-user', '1')
@@ -71,7 +74,7 @@ class MainHandler(tornado.web.RequestHandler):
 def make_app():
 
     return tornado.web.Application([
-        (r'/icecast/', MainHandler),
+        (r'/icecast/', IceCast2Auth),
     ])
 
 if __name__ == '__main__':

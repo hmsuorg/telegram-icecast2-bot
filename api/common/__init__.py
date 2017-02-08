@@ -115,3 +115,56 @@ class CheckIceCast2Stats:
 
         return self.servers
 
+
+class CommonCommands:
+
+    def get_streams(self, bot, update):
+
+        """
+        get_streams
+
+        :param bot
+        :param update
+        """
+
+        ice_stats = CheckIceCast2Stats()
+        stats = ice_stats.get_stats()
+
+        if not stats:
+
+            bot.sendMessage(chat_id=update.message.chat_id, text='There are no active streams')
+            return False
+
+        return stats
+
+    def get_user_data(self, bot, update):
+
+        """
+        get_user_data
+
+        :param bot
+        :param update
+        """
+
+        user_data = bot.get_chat(update.message.chat_id)
+
+        # if username does not exist, we cannot continue, so we just message back, how to create a username
+        if not user_data.username:
+
+            bot.sendMessage(
+                chat_id=update.message.chat_id, text="Please set your username ( telegram -> settings)"
+            )
+
+            bot.sendMessage(
+                chat_id=update.message.chat_id,
+                text="More info @ https://telegram.org/faq#q-what-are-usernames-how-do-i-get-one"
+            )
+
+            bot.sendMessage(
+                chat_id=update.message.chat_id, text="Note that, for this session was created a random username"
+            )
+
+            user_data.username = uuid.uuid4()
+
+        return user_data
+

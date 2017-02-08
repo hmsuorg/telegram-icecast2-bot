@@ -14,7 +14,7 @@ from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 from config.bot_config import ICECAST2_SERVERS, ICECAST2_STATS_FILE, SERVERS_LIMIT
 from config.bot_config import REDIS_DB, REDIS_HOST, REDIS_PORT, REDIS_SESSION_EXPIRE
 
-from api.common import RadioStream, CheckIceCast2Stats
+from api.common import RadioStream, CheckIceCast2Stats, CommonCommands
 from api.interfaces import CommandHandlerAPI
 
 
@@ -27,10 +27,7 @@ class RadioBot(CommandHandlerAPI):
         self.redis_ctx = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
 
         self.log = logging.getLogger(name='RadioBot')
-
-
-    def Start_tcb(self, bot, update, args):
-        self.start_tcb(bot, update, args)
+        self.common = CommonCommands()
 
     def start_tcb(self, bot, update, args):
 
@@ -72,58 +69,6 @@ class RadioBot(CommandHandlerAPI):
         bot.sendMessage(chat_id=update.message.chat_id, text="HMSU Radio Bot Help")
         bot.sendMessage(chat_id=update.message.chat_id, text="Type: /radiokey to get your personal radio access")
 
-    def get_streams(self, bot, update):
-
-        """
-        get_streams
-
-        :param bot
-        :param update
-        """
-
-        ice_stats = CheckIceCast2Stats()
-        stats = ice_stats.get_stats()
-
-        if not stats:
-
-            bot.sendMessage(chat_id=update.message.chat_id, text='There are no active streams')
-            return False
-
-        return stats
-
-    def get_user_data(self, bot, update):
-
-        """
-        get_user_data
-
-        :param bot
-        :param update
-        """
-
-        user_data = bot.get_chat(update.message.chat_id)
-
-        # if username does not exist, we cannot continue, so we just message back, how to create a username
-        if not user_data.username:
-
-            # TODO may be is a good idea, to create random username?
-
-            bot.sendMessage(
-                chat_id=update.message.chat_id, text="Please set your username ( telegram -> settings)"
-            )
-
-            bot.sendMessage(
-                chat_id=update.message.chat_id,
-                text="More info @ https://telegram.org/faq#q-what-are-usernames-how-do-i-get-one"
-            )
-
-            bot.sendMessage(
-                chat_id=update.message.chat_id, text="Note that, for this session was created a random username"
-            )
-
-            user_data.username = uuid.uuid4()
-
-        return user_data
-
     def radiokey_tcb(self, bot, update, args):
 
         """
@@ -135,12 +80,12 @@ class RadioBot(CommandHandlerAPI):
 
         """
 
-        streams = self.get_streams(bot, update)
+        streams = self.common.get_streams(bot, update)
 
         if streams is False:
             return
 
-        user_data = self.get_user_data(bot, update)
+        user_data = self.common.get_user_data(bot, update)
 
         stream = random.choice(streams)
 

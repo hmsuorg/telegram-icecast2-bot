@@ -64,6 +64,14 @@ class CommandsLoader:
                         pass_args=True
                     ))
 
+                    # this will make an alias for every command to be accessible
+                    # with upper first character so /start and /Start is the same now
+                    dispatcher.add_handler(CommandHandler(
+                        callback.replace('_tcb', '').capitalize(),
+                        getattr(klass, callback),
+                        pass_args=True
+                    ))
+
 
     def load(self, dispatcher):
 

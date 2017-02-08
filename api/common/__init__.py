@@ -104,10 +104,10 @@ class CheckIceCast2Stats:
                         radio = RadioStream()
 
                         radio.stream = stats_data['icestats']['source']['listenurl']
-
+                        
                         if radio.stream.startswith('http:'):
-                            radio.stream.replace('http', 'https')
-                            
+                            radio.stream = radio.stream.replace('http', 'https')
+
                         radio.server = srv
                         radio.online = stats_data['icestats']['source']['listeners']
                         self.servers.append(radio)

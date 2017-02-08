@@ -28,6 +28,10 @@ class RadioBot(CommandHandlerAPI):
 
         self.log = logging.getLogger(name='RadioBot')
 
+
+    def Start_tcb(self, bot, update, args):
+        self.start_tcb(bot, update, args)
+
     def start_tcb(self, bot, update, args):
 
         """
@@ -138,6 +142,8 @@ class RadioBot(CommandHandlerAPI):
 
         user_data = self.get_user_data(bot, update)
 
+        stream = random.choice(streams)
+
         # check if the username is already  exist
         is_registered = self.redis_ctx.get(user_data.username)
 
@@ -147,12 +153,15 @@ class RadioBot(CommandHandlerAPI):
         else:
 
             password = uuid.uuid4()
-            self.redis_ctx.setex(password, user_data.username, REDIS_SESSION_EXPIRE)
-            self.redis_ctx.setex(user_data.username, password, REDIS_SESSION_EXPIRE)
+
+            self.redis_ctx.hset(password, "username", user_data.username)
+            # the ip address will be set from iceauth hook
+            self.redis_ctx.hset(password, "ip", "none")
+            self.redis_ctx.hset(password, "stream", stream.stream)
+
+            self.redis_ctx.expire(password, REDIS_SESSION_EXPIRE)
 
         self.log.info('User: {} requesting a radio access'.format(user_data.username))
-
-        stream = random.choice(streams)
 
         private_url = '{}?key={}'.format(stream.stream, password)
 

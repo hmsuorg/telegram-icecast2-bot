@@ -12,27 +12,29 @@ redis_ctx = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
 
 
 class MainHandler(tornado.web.RequestHandler):
-    
+
     def post(self):
-        
+
         try:
 
             data = urlparse(self.request.body_arguments['mount'][0])
-            
+
             ip = urlparse(self.request.body_arguments['ip'][0])
             ip = ip.path
-            
+
             key = parse_qs(data.query).get(b'key')[0]
 
-            username = redis_ctx.get(key)
+            username = redis_ctx.hget(key, "username")
+            ip = redis_ctx.hget(key, "ip")
+            stream = redis_ctx.hget(key, "stream")
 
             if username:
-                
+
                 redis_ctx.set(username, ip)
 
                 print('{} is authenticated and starting listening'.format(username))
                 self.set_header('icecast-auth-user', '1')
-        
+
             else:
                 self.set_header('icecast-auth-user', '0')
 
@@ -41,13 +43,13 @@ class MainHandler(tornado.web.RequestHandler):
 
 
 def make_app():
-    
+
     return tornado.web.Application([
         (r"/icecast/", MainHandler),
     ])
 
 if __name__ == "__main__":
-    
+
     app = make_app()
     app.listen(8044)
     tornado.ioloop.IOLoop.current().start()

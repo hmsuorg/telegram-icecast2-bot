@@ -25,8 +25,13 @@ class MainHandler(tornado.web.RequestHandler):
 
             x_real_ip = self.request.headers.get("X-Real-IP")
             remote_ip = x_real_ip or self.request.remote_ip
-            
-            print(remote_ip)
+
+            server_ip = redis_ctx.hget(key, "server")
+
+            # if the user trying to play between the stream servers
+            if server_ip != remote_ip:
+                self.set_header('icecast-auth-user', '0')
+                return
 
             username = redis_ctx.hget(key, "username")
             ip_redis = redis_ctx.hget(key, "ip")

@@ -158,6 +158,7 @@ class RadioBot(CommandHandlerAPI):
             # the ip address will be set from iceauth hook
             self.redis_ctx.hset(password, "ip", "none")
             self.redis_ctx.hset(password, "stream", stream.stream)
+            self.redis_ctx.hset(password, "server", stream.server)
 
             self.redis_ctx.expire(password, REDIS_SESSION_EXPIRE)
             self.redis_ctx.setex(user_data.username, password, REDIS_SESSION_EXPIRE)

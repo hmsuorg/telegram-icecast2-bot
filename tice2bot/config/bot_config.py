@@ -5,7 +5,7 @@
 ####################################
 
 # Change this to your telegram token
-TOKEN = 'YOUR_TOKEN'
+TOKEN = '513294269:AAHXPBrq_g40mJy2mw24Zry7bRqND3ZRk4U'
 
 # List of bot owners
 
@@ -21,6 +21,7 @@ BOT_OWNERS = [
 
 ICECAST2_SERVERS = [
     'https://radio2.hmsu.org',
+    'https://radio3.hmsu.org:8000',
 ]
 
 # by default status-json.xsl will return http protocol even ssl is set to 1 in

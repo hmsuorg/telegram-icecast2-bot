@@ -7,7 +7,7 @@ from urllib import request
 from urllib.error import URLError
 
 
-from config.bot_config import ICECAST2_SERVERS, ICECAST2_STATS_FILE, SERVERS_LIMIT, SSL
+from config.bot_config import ICECAST2_SERVERS, ICECAST2_STATS_FILE, SERVERS_LIMIT, SSL, NGINX_SSL
 
 
 class RadioStream:
@@ -108,6 +108,9 @@ class CheckIceCast2Stats:
 
                         if SSL is True and radio.stream.startswith('http:'):
                             radio.stream = radio.stream.replace('http', 'https')
+                        
+                        if NGINX_SSL is True and ':8000' in radio.stream:
+                            radio.stream = radio.stream.replace(':8000', '')
 
                         radio.server = socket.gethostbyname(stats_data['icestats']['host'])
                         radio.online = stats_data['icestats']['source']['listeners']
